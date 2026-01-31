@@ -1,0 +1,61 @@
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #4CAF50;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.header h4 {
+  font-size: 16px;
+  margin: 0;
+  color: #333;
+}
+
+.role {
+  background: #E8F5E9;
+  color: #2E7D32;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.body {
+  margin-bottom: 12px;
+}
+
+.body p {
+  font-size: 13px;
+  margin: 4px 0;
+  color: #666;
+}
+
+.button {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.3s ease;
+}
+
+.button:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

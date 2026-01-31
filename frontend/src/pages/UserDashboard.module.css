@@ -1,0 +1,103 @@
+.container {
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.header {
+  background: white;
+  border-bottom: 1px solid #ddd;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-decoration: none;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.userInfo strong {
+  color: #333;
+}
+
+.tabs {
+  background: white;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  padding: 0 20px;
+}
+
+.tab {
+  padding: 16px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: #999;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.tab:hover {
+  color: #667eea;
+}
+
+.tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+}
+
+.content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.section h2 {
+  font-size: 28px;
+  margin: 0 0 30px 0;
+  color: #333;
+}
+
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.eventsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.loading {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 40px 20px;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 8px;
+}
