@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../frontend/build")));
+app.use(express.static(path.join(__dirname, "../../frontend/build")));
 
 // API Routes
 
@@ -42,8 +42,8 @@ app.get("/api/events", async (req, res) => {
 
     const conn = await getConnection();
     const result = await conn.execute(
-      `SELECT * FROM employee_memory_events WHERE subject_emp_id = $1 ORDER BY event_date DESC`,
-      [userId]
+      `SELECT * FROM employee_memory_events WHERE subject_emp_id = :userId ORDER BY event_date DESC`,
+      { userId }
     );
     await conn.close();
 
@@ -54,12 +54,7 @@ app.get("/api/events", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching events:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to fetch events",
-        message: error instanceof Error ? error.message : "",
-      });
+    res.status(500).json({ error: "Failed to fetch events" });
   }
 });
 
@@ -76,8 +71,8 @@ app.get("/api/memories", async (req, res) => {
 
     const conn = await getConnection();
     const result = await conn.execute(
-      `SELECT * FROM ML_MEMORY_PROCESSED WHERE user_id = $1 ORDER BY created_at DESC`,
-      [userId]
+      `SELECT * FROM ML_MEMORY_PROCESSED WHERE user_id = :userId ORDER BY created_at DESC`,
+      { userId }
     );
     await conn.close();
 
@@ -88,12 +83,7 @@ app.get("/api/memories", async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching memories:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to fetch memories",
-        message: error instanceof Error ? error.message : "",
-      });
+    res.status(500).json({ error: "Failed to fetch memories" });
   }
 });
 
@@ -108,7 +98,7 @@ app.get("/api/memory/:id", async (req, res) => {
     const conn = await getConnection();
     const result = await conn.execute(
       `SELECT * FROM ML_MEMORY_PROCESSED WHERE memory_id = :id`,
-      [id]
+      { id }
     );
     await conn.close();
 
@@ -119,12 +109,7 @@ app.get("/api/memory/:id", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error fetching memory:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to fetch memory",
-        message: error instanceof Error ? error.message : "",
-      });
+    res.status(500).json({ error: "Failed to fetch memory" });
   }
 });
 
@@ -172,26 +157,26 @@ app.post("/api/generate-memory", async (req, res) => {
     );
 
     const userType = classifyUser(eventsResult.rows || []);
-    
+
     // Calculate detailed score breakdown
     const scoreBreakdown = calculateScore(event, userType, recentMemories);
 
     // Build memory blueprint with visual theme and animation
     const blueprint = buildBlueprint(event, userType);
-    
+
     // Generate AI narrative using Gemini
     const text = await generateText(blueprint);
 
     // Save memory with all detailed fields
     const memoryId = randomUUID();
     const memoryDate = new Date(event.event_date).toISOString().split('T')[0];
-    
+
     // Calculate lifecycle dates
     const cooldownUntil = new Date();
     cooldownUntil.setDate(cooldownUntil.getDate() + 30);
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 120);
-    
+
     const params: any = {
       memory_id: memoryId,
       user_id: userId,
@@ -318,7 +303,7 @@ app.get("/api/scheduler/status", (req, res) => {
 // Serve React app for all other routes
 app.get("*", (req, res) => {
   try {
-    res.sendFile(path.join(__dirname, "../frontend/build/index.html"));
+    res.sendFile(path.join(__dirname, "../../frontend/build/index.html"));
   } catch (error) {
     res.status(404).json({ error: "Frontend not found" });
   }

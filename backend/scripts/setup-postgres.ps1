@@ -36,7 +36,7 @@ Write-Host ""
 
 # Create tables
 Write-Host "Creating tables..." -ForegroundColor Cyan
-& psql -U $pgUser -h $pgHost -p $pgPort -d memory_lane -f database-schema.sql
+& psql -U $pgUser -h $pgHost -p $pgPort -d memory_lane -f ../database/database-schema.sql
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""

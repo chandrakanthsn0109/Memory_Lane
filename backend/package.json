@@ -2,7 +2,7 @@
   "name": "MemoryLane",
   "version": "1.0.0",
   "scripts": {
-    "build": "tsc && cd frontend && npm run build",
+    "build": "tsc && cd ../frontend && npm run build",
     "build:server": "tsc",
     "start": "node dist/app/server.js",
     "dev": "ts-node app/server.ts",

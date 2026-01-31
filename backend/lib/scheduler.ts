@@ -29,11 +29,11 @@ export async function processAllMemories(): Promise<ProcessingResult[]> {
     const processedMemories: ProcessingResult[] = [];
 
     for (const row of usersResult.rows || []) {
-      const userId = row[0];
+      const userId = row.subject_emp_id || row[0];
 
       const eventsResult = await conn.execute(
-        `SELECT * FROM employee_memory_events WHERE subject_emp_id = $1`,
-        [userId]
+        `SELECT * FROM employee_memory_events WHERE subject_emp_id = :userId`,
+        { userId }
       );
 
       const events = eventsResult.rows || [];
@@ -62,13 +62,13 @@ export async function processAllMemories(): Promise<ProcessingResult[]> {
 
         const memoryId = randomUUID();
         const memoryDate = new Date(bestEvent.event_date).toISOString().split('T')[0];
-        
+
         // Calculate lifecycle dates
         const cooldownUntil = new Date();
         cooldownUntil.setDate(cooldownUntil.getDate() + 30);
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 120);
-        
+
         const params: any = {
           memory_id: memoryId,
           user_id: userId,
@@ -96,7 +96,7 @@ export async function processAllMemories(): Promise<ProcessingResult[]> {
           expires_at: expiresAt.toISOString(),
           created_by: "SYSTEM",
         };
-        
+
         await conn.execute(
           `INSERT INTO ML_MEMORY_PROCESSED
            (memory_id, user_id, memory_date, primary_event_id,
@@ -108,41 +108,15 @@ export async function processAllMemories(): Promise<ProcessingResult[]> {
             has_comment, has_points, has_badge,
             cooldown_until, expires_at, created_by, created_at)
            VALUES
-           ($1, $2, $3, $4,
-            $5, $6, $7,
-            $8, $9, $10,
-            $11, $12, $13,
-            $14, $15, $16,
-            $17, $18, $19,
-            $20, $21, $22,
-            $23, $24, $25, CURRENT_TIMESTAMP)`,
-          [
-            params.memory_id,
-            params.user_id,
-            params.memory_date,
-            params.primary_event_id,
-            params.memory_category,
-            params.emotion_primary,
-            params.emotion_intensity,
-            params.base_weight,
-            params.recency_factor,
-            params.hierarchy_multiplier,
-            params.freshness_penalty,
-            params.repetition_penalty,
-            params.final_score,
-            params.headline,
-            params.story_text,
-            params.emotional_close,
-            params.visual_theme,
-            params.animation_type,
-            params.cta_type,
-            params.has_comment,
-            params.has_points,
-            params.has_badge,
-            params.cooldown_until,
-            params.expires_at,
-            params.created_by,
-          ]
+           (:memory_id, :user_id, :memory_date, :primary_event_id,
+            :memory_category, :emotion_primary, :emotion_intensity,
+            :base_weight, :recency_factor, :hierarchy_multiplier,
+            :freshness_penalty, :repetition_penalty, :final_score,
+            :headline, :story_text, :emotional_close,
+            :visual_theme, :animation_type, :cta_type,
+            :has_comment, :has_points, :has_badge,
+            :cooldown_until, :expires_at, :created_by, CURRENT_TIMESTAMP)`,
+          params
         );
 
         processedMemories.push({

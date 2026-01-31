@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import styles from "./MemoryViewer.module.css";
 import { Memory } from "../services/api";
 
@@ -8,7 +8,10 @@ interface MemoryViewerProps {
   onClose: () => void;
   onNext?: () => void;
   onPrevious?: () => void;
+  isLastMemory?: boolean;
 }
+
+type SlideType = "story" | "cta";
 
 export const MemoryViewer: React.FC<MemoryViewerProps> = ({
   memory,
@@ -16,7 +19,17 @@ export const MemoryViewer: React.FC<MemoryViewerProps> = ({
   onClose,
   onNext,
   onPrevious,
+  isLastMemory = false,
 }) => {
+  const [currentSlide, setCurrentSlide] = useState<SlideType>("story");
+
+  // Reset to story slide when memory changes
+  useEffect(() => {
+    setCurrentSlide("story");
+  }, [memory.memory_id]);
+
+  if (!isOpen) return null;
+
   const emotionEmojis: Record<string, string> = {
     PRIDE: "🏆",
     JOY: "😊",
@@ -28,92 +41,112 @@ export const MemoryViewer: React.FC<MemoryViewerProps> = ({
     DEFAULT: "💫",
   };
 
-  const emotionColors: Record<string, { gradient: string; text: string }> = {
-    PRIDE: { gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", text: "#667eea" },
-    JOY: { gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", text: "#f5576c" },
-    BELONGING: { gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", text: "#4facfe" },
-    GRATITUDE: { gradient: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", text: "#43e97b" },
-    ACHIEVEMENT: { gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", text: "#fa709a" },
-    GROWTH: { gradient: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)", text: "#30cfd0" },
-    INSPIRATION: { gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", text: "#a8edea" },
+  const emotionGradients: Record<string, string> = {
+    PRIDE: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    JOY: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+    BELONGING: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+    GRATITUDE: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    ACHIEVEMENT: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+    GROWTH: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
+    INSPIRATION: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
   };
 
-  const colors =
-    emotionColors[memory.emotion_primary] || emotionColors.DEFAULT;
   const emoji = emotionEmojis[memory.emotion_primary] || emotionEmojis.DEFAULT;
+  const gradient = emotionGradients[memory.emotion_primary] || "linear-gradient(135deg, #333 0%, #000 100%)";
 
-  if (!isOpen) return null;
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentSlide === "story") {
+      // Only show CTA if this is the last memory
+      if (isLastMemory) {
+        setCurrentSlide("cta");
+      } else {
+        // Go directly to next memory
+        if (onNext) onNext();
+        else onClose();
+      }
+    } else {
+      // On CTA slide, close the viewer
+      if (onNext) onNext();
+      else onClose();
+    }
+  };
 
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
+  const handlePrevious = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (currentSlide === "cta") {
+      setCurrentSlide("story");
+    } else {
+      if (onPrevious) onPrevious();
+    }
   };
 
   return (
-    <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.container} onClick={(e) => e.stopPropagation()}>
-        {/* Close Button */}
-        <button className={styles.closeBtn} onClick={onClose}>
-          ✕
-        </button>
-
-        {/* Main Content with Gradient Background */}
-        <div
-          className={styles.mainContent}
-          style={{ background: colors.gradient }}
-        >
-          {/* Top Section */}
-          <div className={styles.topSection}>
-            <div className={styles.emotionBadge}>
-              <span className={styles.emoji}>{emoji}</span>
-              <span className={styles.emotionLabel}>
-                {memory.emotion_primary}
-              </span>
+    <div className={styles.overlay}>
+      <div className={styles.container} style={{ background: gradient }}>
+        {/* Progress Bars */}
+        <div className={styles.progressContainer}>
+          <div className={styles.progressBar}>
+            <div className={`${styles.progressFill} ${currentSlide === "story" ? styles.active : styles.viewed}`} />
+          </div>
+          {isLastMemory && (
+            <div className={styles.progressBar}>
+              <div className={`${styles.progressFill} ${currentSlide === "cta" ? styles.active : ""}`} />
             </div>
-            <div className={styles.scoreBadge}>
-              ⭐ {memory.final_score.toFixed(1)}
-            </div>
-          </div>
-
-          {/* Middle Section - Headline and Category */}
-          <div className={styles.headlineSection}>
-            <h1 className={styles.headline}>{memory.headline}</h1>
-            <p className={styles.category}>{memory.memory_category}</p>
-          </div>
-
-          {/* Story Section */}
-          <div className={styles.storySection}>
-            <p className={styles.story}>{memory.story_text}</p>
-          </div>
-
-          {/* Emotional Close */}
-          <div className={styles.closeSection}>
-            <p className={styles.emotionalClose}>
-              {memory.emotional_close}
-            </p>
-          </div>
-
-          {/* Footer Date */}
-          <div className={styles.dateFooter}>
-            <span>{formatDate(memory.created_at)}</span>
-          </div>
+          )}
         </div>
 
-        {/* Navigation Footer */}
-        <div className={styles.navFooter}>
-          {onPrevious && (
-            <button className={styles.navBtn} onClick={onPrevious}>
-              ← Previous
-            </button>
-          )}
-          {onNext && (
-            <button className={styles.navBtn} onClick={onNext}>
-              Next →
-            </button>
-          )}
+        {/* Close Button */}
+        <button className={styles.closeBtn} onClick={onClose}>✕</button>
+
+        {/* Navigation Tap Areas */}
+        <div className={`${styles.navArea} ${styles.navPrev}`} onClick={handlePrevious} />
+        <div className={`${styles.navArea} ${styles.navNext}`} onClick={handleNext} />
+
+        {/* Content */}
+        <div className={styles.storyContent}>
+          <div className={styles.contentInner}>
+            {currentSlide === "story" ? (
+              <>
+                <div className={styles.emotionTag}>
+                  <span>{emoji}</span> {memory.emotion_primary}
+                </div>
+                <div>
+                  <h1 className={styles.headline}>{memory.headline}</h1>
+                  <p className={styles.storyText}>{memory.story_text}</p>
+                </div>
+                <div style={{ textAlign: "center", opacity: 0.7, fontSize: 14 }}>
+                  {new Date(memory.created_at).toLocaleDateString()}
+                </div>
+              </>
+            ) : (
+              <div className={styles.ctaContainer}>
+                <div style={{ fontSize: 60, marginBottom: 20 }}>{emoji}</div>
+                <h2 className={styles.ctaTitle}>Share this moment</h2>
+                <p className={styles.ctaDescription}>
+                  {memory.emotional_close}
+                </p>
+
+                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  <button
+                    className={`${styles.actionButton} ${styles.primaryAction}`}
+                    onClick={(e) => { e.stopPropagation(); alert("Recognition sent!"); }}
+                    style={{ position: 'relative', zIndex: 60 }}
+                  >
+                    🚀 Send Recognition to Team
+                  </button>
+
+                  <button
+                    className={`${styles.actionButton} ${styles.secondaryAction}`}
+                    onClick={(e) => { e.stopPropagation(); alert("Shared to social media!"); }}
+                    style={{ position: 'relative', zIndex: 60 }}
+                  >
+                    📤 Share to Internal Feed
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

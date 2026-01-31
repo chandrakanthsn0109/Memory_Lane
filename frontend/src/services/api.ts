@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = "/api";
+const API_BASE = process.env.REACT_APP_API_URL || "/api";
 
 export interface Event {
   event_id: string;

@@ -37,7 +37,7 @@ echo.
 
 REM Create tables
 echo Creating tables...
-psql -U %PGUSER% -h %PGHOST% -p %PGPORT% -d memory_lane -f database-schema.sql
+psql -U %PGUSER% -h %PGHOST% -p %PGPORT% -d memory_lane -f ..\database\database-schema.sql
 
 if %ERRORLEVEL% EQU 0 (
     echo.

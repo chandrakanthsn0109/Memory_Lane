@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useMemories } from "../hooks/useMemories";
 import { useEvents } from "../hooks/useEvents";
 import { MemoryCard } from "../components/MemoryCard";
+import { MemoryViewer } from "../components/MemoryViewer";
 import { EventCard } from "../components/EventCard";
 import apiService from "../services/api";
 import styles from "./UserDashboard.module.css";
@@ -11,6 +12,7 @@ export const UserDashboard: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
   const [activeTab, setActiveTab] = useState<"memories" | "events">("memories");
   const [generatingEventId, setGeneratingEventId] = useState<string | null>(null);
+  const [currentMemoryIndex, setCurrentMemoryIndex] = useState<number | null>(null);
   const { memories, loading: memoriesLoading } = useMemories(userId || null);
   const { events, loading: eventsLoading } = useEvents(userId || null);
 
@@ -66,8 +68,12 @@ export const UserDashboard: React.FC = () => {
               <p className={styles.empty}>No memories yet. Generate one from your events!</p>
             ) : (
               <div className={styles.grid}>
-                {memories.map((memory) => (
-                  <MemoryCard key={memory.memory_id} memory={memory} />
+                {memories.map((memory, index) => (
+                  <MemoryCard
+                    key={memory.memory_id}
+                    memory={memory}
+                    onClick={() => setCurrentMemoryIndex(index)}
+                  />
                 ))}
               </div>
             )}
@@ -96,6 +102,28 @@ export const UserDashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Story Viewer - appears when any memory card is clicked */}
+      {currentMemoryIndex !== null && memories[currentMemoryIndex] && (
+        <MemoryViewer
+          memory={memories[currentMemoryIndex]}
+          isOpen={true}
+          onClose={() => setCurrentMemoryIndex(null)}
+          onNext={() => {
+            if (currentMemoryIndex < memories.length - 1) {
+              setCurrentMemoryIndex(currentMemoryIndex + 1);
+            } else {
+              setCurrentMemoryIndex(null);
+            }
+          }}
+          onPrevious={() => {
+            if (currentMemoryIndex > 0) {
+              setCurrentMemoryIndex(currentMemoryIndex - 1);
+            }
+          }}
+          isLastMemory={currentMemoryIndex === memories.length - 1}
+        />
+      )}
     </div>
   );
 };
